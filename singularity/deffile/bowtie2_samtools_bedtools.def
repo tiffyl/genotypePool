@@ -1,0 +1,10 @@
+Bootstrap: docker
+From: ubuntu:20.04
+
+
+%help
+Singularity container with bowtie2 and samtools.
+
+%post
+    apt update
+    DEBIAN_FRONTEND="noninteractive" apt-get install -y bowtie2 samtools bedtools
