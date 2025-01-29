@@ -15,10 +15,14 @@ The main inputs to the genotypePool nextflow pipelines are:
 5. Assignment of single cell to a single sample based on highest concordance based on all chromsomes tested.
 
 ### Outputs
-- **countCellLines.txt**
-- **scCellLines.txt**
-- **readsCellLineAssign.tsv**
-- **snpsCellLineAssign.tsv**
+- **countCellLineAssign.txt** - Number of cells assigned to each individual sample.
+- **scCellLineAssign.txt** - Sample assignment for individual Strand-Seq library.
+- **allChrsCellLineAssign.tsv** - Matrix of cell line assignment per assignment per cell.
+
+- **wc_regions.txt** - File containing WC regions for all individual single cell libraries.
+- **poolvcf/** - A directory holding subsetted VCF files for the pool, split by chromosomes.
+- **mergedbam/** - A directory holding merged BAM files, split by chromosomes.
+- **mergedsnps/** - A directory holding merged SNP files, split by chromosomes.
 
 <br>
 
