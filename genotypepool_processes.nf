@@ -10,7 +10,7 @@ process generatepoolvcf {
         path(samplefile)
 
     output:
-        tuple val(chromosome), path("${chromosome}.pool.vcf.gz"), path("${chromosome}.pool.vcf.gz.csi")
+        tuple val(chromosome), path("${chromosome}.pool.vcf.gz"), path("${chromosome}.pool.vcf.gz.csi"), emit: poolvcfs
     
     script:
     """
@@ -18,7 +18,7 @@ process generatepoolvcf {
 
     bcftools view --threads ${params.threads} --types snps --force-samples -S ${samplefile} -O b \
     -o ${chromosome}.pool.vcf.gz \
-    ${params.refvcfdir}/*${chromosome}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
+    ${params.refvcfdir}/*${chromosome}*.vcf.gz
     bcftools index -c ${chromosome}.pool.vcf.gz
 
     """
@@ -41,8 +41,8 @@ process extractwc {
     chromslist <- strsplit("${params.chromosomes}", ",")[[1]]
 
     if ( ! file.exists(wcfile)) {
-        library(breakpointR)
-        library(GenomicRanges)
+        suppressPackageStartupMessages(library(breakpointR))
+        suppressPackageStartupMessages(library(GenomicRanges))
 
         breakpointr(inputfolder="${bamdir}", outputfolder="${params.outdir}/BPR_output/", pairedEndReads=as.logical("${params.paired}"), 
             numCPU=${params.threads}, windowsize=175, binMethod="reads", background=0.15, 
@@ -65,7 +65,7 @@ process mergeBam {
         val(chromosome)
     
     output:
-        tuple val(chromosome), path("${chromosome}.strandseq.merge.bam"), path("${chromosome}.strandseq.merge.bam.bai")
+        tuple val(chromosome), path("${chromosome}.strandseq.merge.bam"), path("${chromosome}.strandseq.merge.bam.bai"), emit: mergedbam
 
     script:
     """
@@ -91,7 +91,7 @@ process snpsMergeBam {
         tuple val(chromosome), path(bam), path(bamindex)
     
     output:
-        tuple val(chromosome), path("${chromosome}.strandseq.merge.vcf.gz"), path("${chromosome}.strandseq.merge.vcf.gz.csi")
+        tuple val(chromosome), path("${chromosome}.strandseq.merge.vcf.gz"), path("${chromosome}.strandseq.merge.vcf.gz.csi"), emit: mergevcf
 
     script:
     """
@@ -120,7 +120,7 @@ process genotypePool {
 
     
     output:
-        path("poolgenotype_${chromosome}.tsv")
+        path("poolgenotype_${chromosome}.tsv"), emit: results
 
     script:
     """

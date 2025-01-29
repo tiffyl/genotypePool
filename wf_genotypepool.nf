@@ -15,11 +15,6 @@ if ( ! params.ref ) {
     error("Error: --ref parameter not provided.")
 }
 
-// MESSAGE
-if ( ! params.poolvcf ){
-    println "Pool VCF not created."
-}
-
 // PRCOESSES
 include {
     generatepoolvcf
@@ -37,14 +32,14 @@ if ( params.help ) {
              |Required arguments:
              |  --samplefile  File with list of samples in pool.
              |  --paired      Paired end reads (true/false)
-             |  --bamdir      Path to BAM (single-cell) directory. 
+             |  --bamdir      Path to BAM directory single cell libraries. 
              |  --ref         Path to reference genome fasta. 
              |  --refvcfdir   Path to directory holding 1KG vcfs.
              | 
              |Optional arguments:
              |  --outdir      Output (Pool) Directory. [default: "./"]
-             |  --poolvcf     Create pool VCF (Subset from larger VCF file). 
              |  --poolvcfdir  Absolute path to pool VCF. [default: ${params.poolvcfdir}]
+             |  --wcregion    File with WC regions of libraries with format: chr\tstart\tend\tlibrary. 
              |  --chromosomes Comma-separated list of chromosomes to process.
              |                [default: ${params.chromosomes}]
              |  --threads     Number of threads. [default: ${params.threads}]
@@ -74,29 +69,39 @@ log.info """\
 
 workflow {
     // Channels
-    chrom_ch = Channel.fromList("${params.chromosomes}".split(",").toList())
+    Channel.fromList("${params.chromosomes}".split(",").toList()).set{ chroms }
 
     // Extract WC_regions
-    wcregion_ch = extractwc("${params.bamdir}").collect()
-
-    // Create EMBL Pool
-    if ( ! params.poolvcf ){
-        poolvcf_ch = Channel.fromPath("${params.poolvcfdir}/chr*.pool.vcf.gz").map{ file -> tuple(file.baseName.split("\\.")[0], file, "${file}.csi") }
+    if ( params.wcregion ){
+        Channel.fromPath("${params.wcregion}").set{ wcregion }
     }
     else {
-        samplefile_ch = Channel.fromPath("${params.samplefile}").collect()
-        poolvcf_ch = generatepoolvcf(chrom_ch, samplefile_ch)
+        wcregion = extractwc("${params.bamdir}")
+    }
+    
+    // Create EMBL Pool
+    if ( params.poolvcfdir ){
+        Channel.fromPath("${params.poolvcfdir}/chr*.pool.vcf.gz")
+            .map{ file -> tuple(file.baseName.split("\\.")[0], file, "${file}.csi") }
+            .set{ poolvcfs }
+    }
+    else {
+        Channel.fromPath("${params.samplefile}").collect().set{ samplefile }
+        generatepoolvcf(chroms, samplefile)
     }
 
     // Create merged BAM File
-    mergebam_ch = mergeBam(chrom_ch)
+    mergeBam(chroms)
     
     // Extract SNPs from merged BAM
-    mergevcf_ch = snpsMergeBam(mergebam_ch)
+    snpsMergeBam(mergeBam.out.mergedbam)
 
     // Genotype Pool
-    genotype_ch = mergevcf_ch.join(poolvcf_ch).map{ chrom, vcf, vcfidx, poolvcf, poolvcfidx -> tuple(chrom, vcf, poolvcf)}
-    results_ch = genotypePool(genotype_ch, wcregion_ch)
+    snpsMergeBam.out.mergevcf.join(generatepoolvcf.out.poolvcfs)
+        .map{ chrom, vcf, vcfidx, poolvcf, poolvcfidx -> tuple(chrom, vcf, poolvcf)}
+        .set{ genotypes }
 
-    assignSingleCell(results_ch.collect())
+    genotypePool(genotypes, wcregion)
+
+    assignSingleCell(genotypePool.out.results.collect())
 } 
