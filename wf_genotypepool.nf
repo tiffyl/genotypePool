@@ -70,7 +70,7 @@ log.info """\
 workflow {
     // Channels
     Channel.fromList("${params.chromosomes}".split(",").toList()).set{ chroms }
-    Channel.fromPath("${params.bamdir}").set{ bamdir }
+    Channel.fromPath("${params.bamdir}").collect().set{ bamdir }
 
     // Extract WC_regions
     if ( params.wcregion ){
