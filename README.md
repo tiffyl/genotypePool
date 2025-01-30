@@ -40,7 +40,7 @@ singularity build bowtie2_samtools_bedtools.sif deffile/bowtie2_samtools_bedtool
 singularity build py310_viz.sif deffile/py310_viz.def
 singularity build strandseq_Rtools.sif deffile/strandseq_Rtools.def
 ```
-### CONFIG FILE (nextflow.config)
+### nextflow.config
 As singularity containers are being used, please add additional directories that will be accessed that are not the launch directory or project directory in ```singularity.runOptions```. Directory paths should be separated by commas.
 <br>
 
@@ -54,7 +54,7 @@ nextflow wf_genotypepool.nf --paired <true/false> --bamdir <...> --samplefile <.
 ```
 ### Required Inputs:
 | ```--bamdir``` |  Path to BAM directory. (directory with individual good quality Strand-seq BAM files to be genotyped) |
-|:---|:---------|
+|:-----|:---------|
 | ```--samplefile``` | Path to sample file. (Text file with list of samples in the pool, separated by lines) |
 | ```--paired``` | Paired end reads (true/false).|
 | ```--ref``` | Path to reference genome fasta. |
@@ -63,7 +63,7 @@ nextflow wf_genotypepool.nf --paired <true/false> --bamdir <...> --samplefile <.
 
 ### Optional:
 | ```--outdir``` |  Path to output directory. |
-|:---|:---------|
+|:-----|:---------|
 | ```--poolvcfdir``` | Path to directory holding pool vcf.|
 | ```--chromosomes``` | Comma-separated list of chromosomes. |
 | ```--threads``` | Number of threads. |
