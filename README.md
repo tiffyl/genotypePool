@@ -45,6 +45,7 @@ As singularity containers are being used, please add additional directories that
 <br>
 
 Reports are generated automatically by the pipeline, if not needed, please remove or comment out all code below ' WORKFLOW REPORTS'.
+
 <br>
 
 ## Running Pipeline
@@ -53,7 +54,7 @@ nextflow wf_genotypepool.nf --paired <true/false> --bamdir <...> --samplefile <.
 ```
 ### Required Inputs:
 | ```--bamdir``` |  Path to BAM directory. (directory with individual good quality Strand-seq BAM files to be genotyped) |
-|:-|:---------|
+|:---|:---------|
 | ```--samplefile``` | Path to sample file. (Text file with list of samples in the pool, separated by lines) |
 | ```--paired``` | Paired end reads (true/false).|
 | ```--ref``` | Path to reference genome fasta. |
@@ -62,7 +63,7 @@ nextflow wf_genotypepool.nf --paired <true/false> --bamdir <...> --samplefile <.
 
 ### Optional:
 | ```--outdir``` |  Path to output directory. |
-|:-|:---------|
+|:---|:---------|
 | ```--poolvcfdir``` | Path to directory holding pool vcf.|
 | ```--chromosomes``` | Comma-separated list of chromosomes. |
 | ```--threads``` | Number of threads. |
