@@ -70,13 +70,14 @@ log.info """\
 workflow {
     // Channels
     Channel.fromList("${params.chromosomes}".split(",").toList()).set{ chroms }
+    Channel.fromPath("${params.bamdir}").set{ bamdir }
 
     // Extract WC_regions
     if ( params.wcregion ){
         Channel.fromPath("${params.wcregion}").set{ wcregion }
     }
     else {
-        wcregion = extractwc("${params.bamdir}")
+        extractwc(bamdir)
     }
     
     // Create EMBL Pool
@@ -87,21 +88,21 @@ workflow {
     }
     else {
         Channel.fromPath("${params.samplefile}").collect().set{ samplefile }
-        generatepoolvcf(chroms, samplefile)
+        poolvcfs = generatepoolvcf(chroms, samplefile)
     }
 
     // Create merged BAM File
-    mergeBam(chroms)
+    mergeBam(chroms, bamdir)
     
     // Extract SNPs from merged BAM
     snpsMergeBam(mergeBam.out.mergedbam)
 
     // Genotype Pool
-    snpsMergeBam.out.mergevcf.join(generatepoolvcf.out.poolvcfs)
+    snpsMergeBam.out.mergevcf.join(poolvcfs)
         .map{ chrom, vcf, vcfidx, poolvcf, poolvcfidx -> tuple(chrom, vcf, poolvcf)}
         .set{ genotypes }
 
-    genotypePool(genotypes, wcregion)
+    // genotypePool(genotypes, wcregion)
 
-    assignSingleCell(genotypePool.out.results.collect())
+    // assignSingleCell(genotypePool.out.results.collect())
 } 

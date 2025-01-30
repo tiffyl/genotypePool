@@ -1,16 +1,16 @@
-#!/usr/bin/env nextflow
+#! /usr/bin/env nextflow
 nextflow.enable.dsl=2
 
 process generatepoolvcf {
     container "${projectDir}/singularity/bcftools.sif"
-    publishDir "${params.outdir}/${params.poolvcfdir}/", mode: 'copy', pattern: "*pool.vcf.gz*"
+    publishDir "${params.outdir}/poolvcf/", mode: 'copy', pattern: "*pool.vcf.gz*"
 
     input:
         val(chromosome)
         path(samplefile)
 
     output:
-        tuple val(chromosome), path("${chromosome}.pool.vcf.gz"), path("${chromosome}.pool.vcf.gz.csi"), emit: poolvcfs
+        tuple val(chromosome), path("${chromosome}.pool.vcf.gz"), path("${chromosome}.pool.vcf.gz.csi")
     
     script:
     """
@@ -20,17 +20,16 @@ process generatepoolvcf {
     -o ${chromosome}.pool.vcf.gz \
     ${params.refvcfdir}/*${chromosome}*.vcf.gz
     bcftools index -c ${chromosome}.pool.vcf.gz
-
     """
 }
 
 process extractwc {
     container "${projectDir}/singularity/strandseq_Rtools.sif"
     publishDir "${params.outdir}", mode: 'copy', pattern: "wc_regions.txt"
-    
+
     input:
         path(bamdir)
-    
+
     output:
         path("wc_regions.txt")
 
@@ -46,14 +45,13 @@ process extractwc {
 
         breakpointr(inputfolder="${bamdir}", outputfolder="${params.outdir}/BPR_output/", pairedEndReads=as.logical("${params.paired}"), 
             numCPU=${params.threads}, windowsize=175, binMethod="reads", background=0.15, 
-            chromosomes=chromslist, maskRegions="$HOME/data/blacklist.highdepth.centromeres.bed")
+            chromosomes=chromslist, maskRegions="${projectDir}/blacklist.highdepth.centromeres.bed")
 
         exportRegions(datapath=paste0("${params.outdir}", "/BPR_output/data"), file="wc_regions.txt", 
                     collapseInversions=FALSE, minRegionSize=10000, state="wc")
     } else {
         file.copy(wcfile, "./")
     }
-
     """
 }
 
@@ -63,6 +61,7 @@ process mergeBam {
 
     input:
         val(chromosome)
+        path(bamdir)
     
     output:
         tuple val(chromosome), path("${chromosome}.strandseq.merge.bam"), path("${chromosome}.strandseq.merge.bam.bai"), emit: mergedbam
@@ -76,11 +75,10 @@ process mergeBam {
         ln -s \$mergedbamdir/\$strandmergebam* ./
 
     else
-        samtools merge -@ ${params.threads} -R ${chromosome} -o \$strandmergebam ${params.bamdir}/*bam 
+        samtools merge -@ ${params.threads} -R ${chromosome} \$strandmergebam ${bamdir}/*bam 
         samtools index \$strandmergebam
     fi
     """
-
 }
 
 process snpsMergeBam {
@@ -125,9 +123,6 @@ process genotypePool {
     script:
     """
     #!/usr/bin/env Rscript
-
-    ## genotypepool.R <chr> <bamfolder> <wcregion.txt>
-
     chrom=as.character("${chromosome}")
 
     chrnamedlist=list("${poolvcf}")
