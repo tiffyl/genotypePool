@@ -18,7 +18,6 @@ The main inputs to the genotypePool nextflow pipelines are:
 - **countCellLineAssign.txt** - Number of cells assigned to each individual sample.
 - **scCellLineAssign.txt** - Sample assignment for individual Strand-Seq library.
 - **allChrsCellLineAssign.tsv** - Matrix of cell line assignment per assignment per cell.
-
 - **wc_regions.txt** - File containing WC regions for all individual single cell libraries.
 - **poolvcf/** - A directory holding subsetted VCF files for the pool, split by chromosomes.
 - **mergedbam/** - A directory holding merged BAM files, split by chromosomes.
@@ -29,7 +28,7 @@ The main inputs to the genotypePool nextflow pipelines are:
 ![](./dag.png)
 
 
-
+<br>
 
 ## SetUp
 The singularity containers required for the pipeline can be build using image files located in ```deffile```.
@@ -41,28 +40,31 @@ singularity build bowtie2_samtools_bedtools.sif deffile/bowtie2_samtools_bedtool
 singularity build py310_viz.sif deffile/py310_viz.def
 singularity build strandseq_Rtools.sif deffile/strandseq_Rtools.def
 ```
+### CONFIG FILE (nextflow.config)
+As singularity containers are being used, please add additional directories that will be accessed that are not the launch directory or project directory in ```singularity.runOptions```. Directory paths should be separated by commas.
+<br>
+
+Reports are generated automatically by the pipeline, if not needed, please remove or comment out all code below ' WORKFLOW REPORTS'.
+<br>
 
 ## Running Pipeline
 ```
 nextflow wf_genotypepool.nf --paired <true/false> --bamdir <...> --samplefile <...> --ref <...> --refvcfdir <...>
 ```
 ### Required Inputs:
-||  |
-|:-|:---------|
 | ```--bamdir``` |  Path to BAM directory. (directory with individual good quality Strand-seq BAM files to be genotyped) |
+|:-|:---------|
 | ```--samplefile``` | Path to sample file. (Text file with list of samples in the pool, separated by lines) |
 | ```--paired``` | Paired end reads (true/false).|
 | ```--ref``` | Path to reference genome fasta. |
 | ```--refvcfdir``` | Path to directory holding 1KG vcfs, separated by chromosomes. |
-| | |
+
 
 ### Optional:
-||  |
-|:-|:---------|
 | ```--outdir``` |  Path to output directory. |
+|:-|:---------|
 | ```--poolvcfdir``` | Path to directory holding pool vcf.|
 | ```--chromosomes``` | Comma-separated list of chromosomes. |
 | ```--threads``` | Number of threads. |
-| | |
 
 
