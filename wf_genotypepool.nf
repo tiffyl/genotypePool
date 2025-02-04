@@ -102,7 +102,7 @@ workflow {
         .map{ chrom, vcf, vcfidx, poolvcf, poolvcfidx -> tuple(chrom, vcf, poolvcf)}
         .set{ genotypes }
 
-    // genotypePool(genotypes, wcregion)
+    genotypePool(genotypes, wcregion)
 
-    // assignSingleCell(genotypePool.out.results.collect())
+    assignSingleCell(genotypePool.out.results.collect())
 } 
