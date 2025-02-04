@@ -115,7 +115,7 @@ process genotypePool {
     input:
         tuple val(chromosome), path(vcf), path(poolvcf)
         path(wcregion)
-
+        path(bamdir)
     
     output:
         path("poolgenotype_${chromosome}.tsv"), emit: results
@@ -130,7 +130,7 @@ process genotypePool {
 
     suppressPackageStartupMessages(library("StrandPhaseR"))
 
-    genotypes_df <- genotypeStrandScells(inputfolder="${params.bamdir}",
+    genotypes_df <- genotypeStrandScells(inputfolder="${bamdir}",
                                         strandS.vcf="${vcf}",
                                         popul.vcf.list=chrnamedlist,
                                         wc.regions="${wcregion}",
