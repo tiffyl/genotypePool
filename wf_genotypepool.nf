@@ -77,7 +77,7 @@ workflow {
         Channel.fromPath("${params.wcregion}").set{ wcregion }
     }
     else {
-        extractwc(bamdir)
+        wcregion = extractwc(bamdir)
     }
     
     // Create EMBL Pool
