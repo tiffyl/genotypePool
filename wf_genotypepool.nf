@@ -42,8 +42,7 @@ if ( params.help ) {
              |  --wcregion    File with WC regions of libraries with format: chr\tstart\tend\tlibrary. 
              |  --chromosomes Comma-separated list of chromosomes to process.
              |                [default: ${params.chromosomes}]
-             |  --threads     Number of threads. [default: ${params.threads}]
-             |  --conda       Path to miniconda envs [default: ${params.conda}]""".stripMargin()
+             |  --threads     Number of threads. [default: ${params.threads}]""".stripMargin()
 
     // Print the help with the stripped margin and exit
     println(help)
@@ -74,7 +73,7 @@ workflow {
 
     // Extract WC_regions
     if ( params.wcregion ){
-        Channel.fromPath("${params.wcregion}").set{ wcregion }
+        Channel.fromPath("${params.wcregion}").collect().set{ wcregion }
     }
     else {
         wcregion = extractwc(bamdir)

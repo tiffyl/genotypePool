@@ -16,9 +16,8 @@ process generatepoolvcf {
     """
     poolvcf="${chromosome}.pool.vcf.gz"
 
-    bcftools view --threads ${params.threads} --types snps --force-samples -S ${samplefile} -O b \
-    -o ${chromosome}.pool.vcf.gz \
-    ${params.refvcfdir}/*${chromosome}*.vcf.gz
+    bcftools view --threads ${params.threads} --types snps --force-samples -S ${samplefile} -Oz -o ${chromosome}.pool.vcf.gz \
+    \$(compgen -f ${params.refvcfdir}/*${chromosome}*.vcf.gz | grep ".gz\$")
     bcftools index -c ${chromosome}.pool.vcf.gz
     """
 }
@@ -100,9 +99,9 @@ process snpsMergeBam {
         ln -s \$mergedsnpsdir/\$strandmergevcf* ./
 
     else
-        bcftools mpileup --threads ${params.threads} -f ${params.ref} ${bam} | \
-        bcftools call --threads ${params.threads} --skip-variants indels -mv -Oz | \
-        bcftools view --types snps --genotype het --include 'INFO/DP>=10' -O b -o \$strandmergevcf
+        bcftools mpileup --threads ${params.threads} -f ${params.ref} -Ou ${bam} | \
+        bcftools call --threads ${params.threads} --skip-variants indels -mv -Ou | \
+        bcftools view --types snps --genotype het --include 'INFO/DP>=10' -Oz -o \$strandmergevcf
         bcftools index -c \$strandmergevcf
     fi
     """
@@ -123,12 +122,12 @@ process genotypePool {
     script:
     """
     #!/usr/bin/env Rscript
-    chrom=as.character("${chromosome}")
+    suppressPackageStartupMessages(library(StrandPhaseR))
+    source("${projectDir}/scripts/genotypeStrandScells.R")
 
+    chrom=as.character("${chromosome}")
     chrnamedlist=list("${poolvcf}")
     names(chrnamedlist) <- chrom
-
-    suppressPackageStartupMessages(library("StrandPhaseR"))
 
     genotypes_df <- genotypeStrandScells(inputfolder="${bamdir}",
                                         strandS.vcf="${vcf}",
@@ -137,7 +136,6 @@ process genotypePool {
                                         chromosomes=chrom,
                                         min.snv.cov=2,
                                         max.snv.per.chr=5000)
-                                        # blacklist=SDs.gr)
 
     write.table(genotypes_df, paste0('poolgenotype_', chrom, '.tsv'), sep="\t", quote=FALSE)
     """

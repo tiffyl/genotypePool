@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: r-base:4.4.0
+From: r-base:4.3.0
 
 
 %help
@@ -7,20 +7,21 @@ Singularity container with R tools for Strand-Seq (BreakpointR, StrandPhaseR, In
 
 %post
     apt update
-    DEBIAN_FRONTEND="noninteractive" apt-get install -y build-essential libzmq3-dev libcurl4-gnutls-dev libxml2-dev libssl-dev libbz2-dev liblzma-dev libfontconfig1-dev libharfbuzz-dev libgit2-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev procps
+    DEBIAN_FRONTEND="noninteractive" apt-get install -y build-essential libzmq3-dev libcurl4-gnutls-dev libxml2-dev libssl-dev libbz2-dev liblzma-dev libfontconfig1-dev libharfbuzz-dev libgit2-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev libicu-dev procps
 
-    R -e 'if (!requireNamespace("BiocManager", quietly=TRUE)) install.packages("BiocManager"); 
-    install.packages("devtools", dependencies = TRUE);
-    BiocManager::install(c("GenomicRanges", "GenomicAlignments", "lawremi/rtracklayer", "VariantAnnotation"));
-    library("devtools");
+    R -e 'if (!requireNamespace("BiocManager", quietly=TRUE)) install.packages("BiocManager");
+    BiocManager::install(c("GenomicRanges", "GenomicAlignments", "VariantAnnotation"));
+    
+    install.packages("pak");
+    library("pak");
+    pkg_install("lawremi/rtracklayer")
 
     # BreakpointR
-    install_github("daewoooo/breakpointRdata", force=TRUE);
-    install_github("daewoooo/breakpointR", force=TRUE);
+    pkg_install(c("daewoooo/breakpointRdata", "daewoooo/breakpointR"))
 
     # StrandPhaseR
-    install_github("daewoooo/StrandPhaseR", force=TRUE);
+    pkg_install("daewoooo/StrandPhaseR")
 
     # InvertypeR 
-    install_github("vincent-hanlon/InvertypeR", force=TRUE);
+    pkg_install("vincent-hanlon/InvertypeR")
     '

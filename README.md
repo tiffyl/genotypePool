@@ -25,7 +25,7 @@ The main inputs to the genotypePool nextflow pipelines are:
 
 <br>
 
-![](./dag.png)
+![](./genotypePool_dag.png)
 
 
 <br>
